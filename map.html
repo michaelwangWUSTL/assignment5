@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Test</title>
+        <script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript">
+			d3.tsv("disease.csv", function(data) {
+			var svgContainer = d3.select("body").append("svg")
+												.attr("width", 1200)
+												.attr("height", 500);
+			patients = new Array(data.length).fill(0);
+				for (i=0; i<data.length; i++) {
+					if (data[i]["group"]=="disease") {
+						patients[i]+=6;
+					}
+					if(data[i]["test"]=="pos") {
+						patients[i]+=1;
+					}
+					console.log(patients[i]);
+					var circle = svgContainer.append("circle")
+											 .attr("cx", parseInt((i/5))*50+50)
+											 .attr("cy", parseInt((i%5)*50+50))
+											 .attr("r", parseInt(20))
+											 .attr("stroke", circleOutline(patients[i]))
+											 .attr("stroke-width", 5)
+											 .style("fill", circleFill(patients[i]));
+
+				}
+				// Create scale
+				var xScale = d3.scaleLinear()
+							   .domain([0, 1200])
+							   .range([0, 500]);
+
+				// Add scales to axis
+				var x_axis = d3.axisBottom()
+							   .scale(xScale);
+
+				//Append group and insert axis
+				svgContainer.append("g")
+				   .call(x_axis);
+			});
+			
+			function circleFill(number) {
+				if (number>1) {
+					return "gray";
+				}
+				else {
+					return "blue";
+				}
+			}
+			function circleOutline(number) {
+				if (number%2==1) {
+					return "red";
+				}
+				else {
+					return "yellow";
+				}
+			}
+			
+        </script>
+    </body>
+</html>    
