@@ -1,9 +1,0 @@
-title: Refugee Immigration over Time
-description: 
-  Refugee Immigration over Time
-baseurl: "map.html"
-url: "https://michaelwangwustl.github.io" 
-github_username:  michaelwangWUSTL
-
-# Build settings
-markdown: kramdown
