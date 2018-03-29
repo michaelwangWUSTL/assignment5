@@ -280,14 +280,87 @@
 						originCountries = filteredData.filter(d=> d.Destination == destination.properties.name);
 						var originSet = new Set();
 						var acceptedRefugees = 0;
+						var maxRefugee2 = 0;
+						var countryName = "";
+						var countryRefugeeCount =0;
+						svg.selectAll("path")
+							.style("fill", "#C0C0C0")
+							
 						originCountries.forEach(function(entry) {
+							if(countryName =="") {
+								countryName = entry.Origin;
+							}
+							else if (entry.Origin != countryName) {
+								countryRefugeeCount = 0;
+								countryName = entry.Origin;
+							}
+							if (countryName == entry.Origin) {
+								countryRefugeeCount+=parseInt(entry.Value);
+							}
+							if(countryRefugeeCount>maxRefugee2) {
+								maxRefugee2 = countryRefugeeCount;
+							}
 							originSet.add(entry.Origin);
 							acceptedRefugees += parseInt(entry.Value);
 						});
+						var color2 = d3.scaleThreshold()
+							.domain([0, .001*maxRefugee2, .005*maxRefugee2, .01*maxRefugee2, .02*maxRefugee2, .05*maxRefugee2, .1*maxRefugee2, .2*maxRefugee2, .3*maxRefugee2, .5*maxRefugee2, maxRefugee2])
+							.range(["C0C0C0", "13ADCE", "269AB8", "3987A1", "4C738B", "5F6075", "724D5E", "853948", "982631", "AB131B", "BF0005"]);
+						svg.selectAll(".rect")
+						.data(["C0C0C0", "13ADCE", "269AB8", "3987A1", "4C738B", "5F6075", "724D5E", "853948", "982631", "AB131B", "BF0005"])
+						.enter()
+						.append("rect")
+						.attr("x", function(d, i) {
+							return 500+(bWidth+bSpace)*i;
+						})
+						.attr("y", 650)
+						.attr("width", bWidth)
+						.attr("height", bHeight)
+						.attr("rx", 5)
+						.attr("ry", 5)
+						.style("fill", function(d) {return d})
 						originCountryPaths = svg.selectAll("path").filter(function(d) {
 							return originSet.has(d.properties.name);
 						});
 						originCountryPaths.style("stroke", "black");
+						originCountryPaths.style("fill", function(x) {
+							var countryData = originCountries.filter(d=> d.Origin == x.properties.name)
+							var totalRefugees = 0;
+							countryData.forEach(function(entry) {
+								totalRefugees += parseInt(entry.Value);
+							});
+							//console.log(x.properties.name + ":" + totalRefugees);
+							return color2(totalRefugees);
+						})
+						
+						svg.selectAll("text").filter(".axisText").remove();
+						
+						svg.selectAll(".text")
+						.data([0, .001*maxRefugee2, .005*maxRefugee2, .01*maxRefugee2, .02*maxRefugee2, .05*maxRefugee2, .1*maxRefugee2, .2*maxRefugee2, .3*maxRefugee2, .5*maxRefugee2, maxRefugee2])
+						.enter()
+						.append("text")
+						.attr("class", "axisText")
+						.attr("x", function(d, i) {
+							return 500+(bWidth+bSpace)*i+bWidth/2;
+						})
+						.attr("y", 650+bHeight/2)
+						.attr("width", bWidth)
+						.attr("text-anchor", "middle")
+						.attr("dominant-baseline", "central")
+						.attr("fill", "white")
+						.text(function(d){ return Math.round(d)})
+										
+						svg.append("text")
+						.attr("class", "axisText")
+						.attr("font-family", "Arial")
+						.attr("x", (960))
+						.attr("y", 640)
+						.attr("text-anchor", "middle")
+						.attr("dominant-baseline", "central")
+						.attr("fill", "black")
+						.text("Number of Refugees Accepted by Highlighted Country")
+		
+		
 						svg
 						.append("text")
 						.attr("class", "tooltip")
@@ -335,7 +408,59 @@
 						originCountryPaths.style("stroke", "white");
 						svg.selectAll("text").filter(".tooltip").remove();
 						tooltipText();
+						svg.selectAll("path")
+							.style("fill", function(d) {
+								if(isNaN(refugeeCount[d.properties.name])) {
+									return color(0);
+								}
+								return color(refugeeCount[d.properties.name]);
+								})
+						svg.selectAll("text").filter(".axisText").remove();
+						
+						svg.selectAll(".rect")
+						.data(["00C1E5", "13ADCE", "269AB8", "3987A1", "4C738B", "5F6075", "724D5E", "853948", "982631", "AB131B", "BF0005"])
+						.enter()
+						.append("rect")
+						.attr("x", function(d, i) {
+							return 500+(bWidth+bSpace)*i;
+						})
+						.attr("y", 650)
+						.attr("width", bWidth)
+						.attr("height", bHeight)
+						.attr("rx", 5)
+						.attr("ry", 5)
+						.style("fill", function(d) {return d})	
+						
+						
+						svg.selectAll(".text")
+						.data([0, .001*maxRefugees, .005*maxRefugees, .01*maxRefugees, .02*maxRefugees, .05*maxRefugees, .1*maxRefugees, .2*maxRefugees, .3*maxRefugees, .5*maxRefugees, maxRefugees])
+						.enter()
+						.append("text")
+						.attr("class", "axisText")
+						.attr("x", function(d, i) {
+							return 500+(bWidth+bSpace)*i+bWidth/2;
+						})
+						.attr("y", 650+bHeight/2)
+						.attr("width", bWidth)
+						.attr("text-anchor", "middle")
+						.attr("dominant-baseline", "central")
+						.attr("fill", "white")
+						.text(function(d){ return Math.round(d)})		
+
+						
+						svg.append("text")
+						.attr("class", "axisText")
+						.attr("font-family", "Arial")
+						.attr("x", (960))
+						.attr("y", 640)
+						.attr("text-anchor", "middle")
+						.attr("dominant-baseline", "central")
+						.attr("fill", "black")
+						.text("Number of Refugees Exported")
+				
 					})
+
+						
 				});
 			});
 		}
