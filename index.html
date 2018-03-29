@@ -123,6 +123,17 @@
 		.attr("fill", "black")
 		.text("Number of Refugees Exported")
 		
+		svg.append("text")
+		.attr("class", "title")
+		.attr("font-family", "Arial")
+		.attr("x", (1700))
+		.attr("y", 200)
+		.attr("text-anchor", "middle")
+		.attr("dominant-baseline", "central")
+		.attr("fill", "black")
+		.text("Refugees Exported by Country")
+		.attr("font-size", "25")
+		
 		tooltipText();	
 		
 		function updateButtonColors(button, parent, className) {
@@ -283,7 +294,7 @@
 						.attr("x", 1700)
 						.attr("y", 300)
 						.attr('text-anchor', 'middle')
-						.text(function(state) {return "Selected Country: " + destination.properties.name})
+						.text(function(state) {return "" + destination.properties.name})
 						.style("fill", "black");
 						svg
 						.append("text")
