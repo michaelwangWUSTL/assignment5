@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <title>D3 Test</title>
         <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+		<script src="//d3js.org/topojson.v1.min.js"></script>
     </head>
     <body>
 
@@ -11,6 +12,7 @@
         <script type="text/javascript">
 		width = 1920;
 		height = 900;
+		var color = d3.scaleOrdinal(d3.schemeCategory20);
 		var path = d3.geoPath();
 		var svg = d3.select("body")
 		.append("svg")
@@ -18,23 +20,259 @@
 		.attr("height", height)
 		.append('g')
 		.attr('class', 'map');
+		d3.select("body")
+		.attr("align", "center");
+		
+		var background = svg.append("rect")
+							.attr("id", "backgroundRect")
+							.attr("width", "11%")
+							.attr("height", "65%")
+							.attr("x", 100)
+							.attr("y", 50)
+							.attr("fill", "#99ccff")
+							.attr("rx", 5)
+							.attr("ry", 5)
+							
+		
+		var years = ["1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", ];
+		var months = ["All", "January","February","March","April","May","June","July","August","September","October","November","December"]
+		var defaultColor= "#7777BB"
+		var hoverColor= "#0000ff"
+		var pressedColor= "#000077"
+		
+		var bWidth= 80; //button width
+		var bHeight= 25; //button height
+		var bSpace= 10; //space between buttons
+		var x0= 20; //x offset
+		var y0= 10; //y offset
+		var yStartButton = 70;
+		var selectedYear = "1999";
+		var selectedMonth = "All";
+		var buttons = svg.append("g")
+						 .attr("id", "buttons");
+						 
+		var buttonGroups = buttons.selectAll("g.button")
+								  .data(years)
+								  .enter()
+								  .append("g")
+								  .attr("class", "button")
+								  .attr("transform", function(d, i) {
+										return ("translate(120, " + (parseInt(yStartButton)+(bHeight+bSpace)*i) + ")")
+									})
+								  .style("cursor", "pointer")
+								  .on("click", function(d, i) {
+									updateButtonColors(d3.select(this), d3.select(this.parentNode), ".yearButton")
+									selectedYear = d;
+									drawMap();
+									})
+								  .on("mouseover", function() {
+									if(d3.select(this).select("rect").attr("fill") != pressedColor) {
+										d3.select(this)
+											.select("rect")
+											.attr("fill", hoverColor);
+									}
+								  })
+								  .on("mouseout", function() {
+									if(d3.select(this).select("rect").attr("fill") != pressedColor) {
+										d3.select(this)
+											.select("rect")
+											.attr("fill", defaultColor);
+									}
+								  })
+								 
+		
+		buttonGroups.append("rect")
+					.attr("class", "yearButton")
+					.attr("width", bWidth)
+					.attr("height", bHeight)
+					.attr("rx", 5)
+					.attr("ry", 5)
+					.attr("fill", function(d, i) {
+						if (d=="1999") {
+							return pressedColor;
+						}
+						return defaultColor})
+					
+		buttonGroups.append("text")
+					.attr("class", "buttonText")
+					.attr("font-family", "Arial")
+					.attr("x", (bWidth/2))
+					.attr("y", bHeight/2)
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central")
+					.attr("fill", "white")
+					.text(function(d) {return d;})
+					
+		function updateButtonColors(button, parent, className) {
+			parent.selectAll("rect").filter(className)
+					.attr("fill",defaultColor)
 
+			button.select("rect")
+					.attr("fill",pressedColor)
+		}
+
+		var buttonGroups = buttons.selectAll(".g.button")
+								  .data(months)
+								  .enter()
+								  .append("g")
+								  .attr("class", "button")
+								  .attr("transform", function(d, i) {
+										return ("translate(210, " + (parseInt(yStartButton)+(bHeight+bSpace)*i) + ")")
+									})
+								  .style("cursor", "pointer")
+								  .on("click", function(d, i) {
+									updateButtonColors(d3.select(this), d3.select(this.parentNode), ".monthButton")
+									selectedMonth = d;
+									drawMap();
+									})
+								  .on("mouseover", function() {
+									if(d3.select(this).select("rect").attr("fill") != pressedColor) {
+										d3.select(this)
+											.select("rect")
+											.attr("fill", hoverColor);
+									}
+								  })
+								  .on("mouseout", function() {
+									if(d3.select(this).select("rect").attr("fill") != pressedColor) {
+										d3.select(this)
+											.select("rect")
+											.attr("fill", defaultColor);
+									}
+								  })
+								 
+		
+		buttonGroups.append("rect")
+					.attr("class", "monthButton")
+					.attr("width", bWidth)
+					.attr("height", bHeight)
+					.attr("rx", 5)
+					.attr("ry", 5)
+					.attr("fill", function(d, i) {
+						if (d==selectedMonth) {
+							return pressedColor;
+						}
+						return defaultColor})
+					
+		buttonGroups.append("text")
+					.attr("class", "buttonText")
+					.attr("font-family", "Arial")
+					.attr("x", (bWidth/2))
+					.attr("y", bHeight/2)
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central")
+					.attr("fill", "white")
+					.text(function(d) {return d;})		
+					
 		var projection = d3.geoMercator()
 						   .scale(150)
 						  .translate( [width / 2, height / 2]);
-
-		var path = d3.geoPath().projection(projection);
-		d3.json("data/world_countries.json", function(error, jsonCountries) {
-			svg.selectAll("path")
-			.data(jsonCountries.features.filter(d => d.properties.name !== "Antarctica"))
-			.enter().append("path")
-			.attr("d", path)
-			.style("fill", 'black')
-			.style('stroke', 'white')
-			.style('stroke-width', 1.5)
-			.style("opacity",0.8)
-		});
-
+						  
+		var maxRefugees = 0;
+		var refugeeCount = {};
+		drawMap();
+		
+		function drawMap() {
+		refugeeCount = {};
+		maxRefugees = 0;
+			svg.selectAll("path").remove();
+			var path = d3.geoPath().projection(projection);
+			d3.json("data/world_countries.json", function(error, jsonCountries) {
+				d3.csv("data/cleanedData2.csv", function(error, refugeeData) {
+				var originCountryPaths;
+					//Parse the refugee data and record how many refugees from each 
+					//country as well as the max number of refugees from one country
+					filteredData = refugeeData.filter(d=> d.Year == selectedYear);
+					if(selectedMonth != "All") {
+						filteredData = filteredData.filter(d=> d.Month == selectedMonth);
+					}
+					filteredData.forEach(function(entry) {
+						if (isNaN(refugeeCount[entry.Origin])) {
+							refugeeCount[entry.Origin] = 0;
+						}
+						refugeeCount[entry.Origin] += parseInt(entry.Value);
+						if (refugeeCount[entry.Origin] > maxRefugees) {
+							maxRefugees = refugeeCount[entry.Origin];
+						}
+					});
+					//Create the color gradient for the countries based on number of refugees from the country
+					var color = d3.scaleThreshold()
+						.domain([0, .001*maxRefugees, .005*maxRefugees, .01*maxRefugees, .02*maxRefugees, .05*maxRefugees, .1*maxRefugees, .2*maxRefugees, .3*maxRefugees, .5*maxRefugees, maxRefugees])
+						.range(["00C1E5", "13ADCE", "269AB8", "3987A1", "4C738B", "5F6075", "724D5E", "853948", "982631", "AB131B", "BF0005"]);
+					
+					svg.selectAll("path")
+					.data(jsonCountries.features.filter(d => d.properties.name !== "Antarctica"))
+					.enter().append("path")
+					.attr("d", path)
+					.style("fill", function(d) {
+						if(isNaN(refugeeCount[d.properties.name])) {
+							return color(0);
+						}
+						return color(refugeeCount[d.properties.name]);
+						})
+					.style('stroke', 'white')
+					.style('stroke-width', 1.5)
+					.style("opacity",0.8)
+					.on("mouseover", function(destination) {
+						d3.select(this)
+							.style("fill", "yellow")
+						originCountries = filteredData.filter(d=> d.Destination == destination.properties.name);
+						var originSet = new Set();
+						var acceptedRefugees = 0;
+						originCountries.forEach(function(entry) {
+							originSet.add(entry.Origin);
+							acceptedRefugees += parseInt(entry.Value);
+						});
+						originCountryPaths = svg.selectAll("path").filter(function(d) {
+							return originSet.has(d.properties.name);
+						});
+						originCountryPaths.style("stroke", "black");
+						svg
+						.append("text")
+						.attr("class", "tooltip")
+						.attr("x", 1700)
+						.attr("y", 300)
+						.attr('text-anchor', 'middle')
+						.text(function(state) {return "Selected Country: " + destination.properties.name})
+						.style("fill", "black");
+						svg
+						.append("text")
+						.attr("class", "tooltip")
+						.attr("x", 1700)
+						.attr("y", 315)
+						.attr('text-anchor', 'middle')
+						.text(function(state) {return "Total Refugees Exported: " + refugeeCount[destination.properties.name]})
+						.style("fill", "black");
+						svg
+						.append("text")
+						.attr("class", "tooltip")
+						.attr("x", 1700)
+						.attr("y", 330)
+						.attr('text-anchor', 'middle')
+						.text(function(state) {return "Accepted " + acceptedRefugees + " Refugees From"})
+						.style("fill", "black");	
+						svg
+						.append("text")
+						.attr("class", "tooltip")
+						.attr("x", 1700)
+						.attr("y", 345)
+						.attr('text-anchor', 'middle')
+						.text(function(state) {return originSet.size + " Countries (Outlined in Black)"})
+						.style("fill", "black");							
+					})
+					.on("mouseout", function(d) {
+						d3.select(this)
+							.style("fill", function(d) {
+						if(isNaN(refugeeCount[d.properties.name])) {
+							return color(0);
+						}
+						return color(refugeeCount[d.properties.name]);
+						})
+						originCountryPaths.style("stroke", "white");
+						svg.selectAll("text").filter(".tooltip").remove();
+					})
+				});
+			});
+		}
         </script>
     </body>
 </html>    
