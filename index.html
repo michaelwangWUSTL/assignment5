@@ -103,6 +103,28 @@
 					.attr("fill", "white")
 					.text(function(d) {return d;})
 					
+		svg.append("rect")
+			.attr("id", "tooltipRect")
+			.attr("width", 240)
+			.attr("height", 100)
+			.attr("x", 1580)
+			.attr("y", 270)
+			.attr("rx", 5)
+			.attr("ry", 5)
+			.attr("fill", defaultColor)
+			
+		svg.append("text")
+		.attr("class", "axisText")
+		.attr("font-family", "Arial")
+		.attr("x", (960))
+		.attr("y", 640)
+		.attr("text-anchor", "middle")
+		.attr("dominant-baseline", "central")
+		.attr("fill", "black")
+		.text("Number of Refugees Exported")
+		
+		tooltipText();	
+		
 		function updateButtonColors(button, parent, className) {
 			parent.selectAll("rect").filter(className)
 					.attr("fill",defaultColor)
@@ -199,6 +221,35 @@
 						.domain([0, .001*maxRefugees, .005*maxRefugees, .01*maxRefugees, .02*maxRefugees, .05*maxRefugees, .1*maxRefugees, .2*maxRefugees, .3*maxRefugees, .5*maxRefugees, maxRefugees])
 						.range(["00C1E5", "13ADCE", "269AB8", "3987A1", "4C738B", "5F6075", "724D5E", "853948", "982631", "AB131B", "BF0005"]);
 					
+					svg.selectAll(".rect")
+						.data(["00C1E5", "13ADCE", "269AB8", "3987A1", "4C738B", "5F6075", "724D5E", "853948", "982631", "AB131B", "BF0005"])
+						.enter()
+						.append("rect")
+						.attr("x", function(d, i) {
+							return 500+(bWidth+bSpace)*i;
+						})
+						.attr("y", 650)
+						.attr("width", bWidth)
+						.attr("height", bHeight)
+						.attr("rx", 5)
+						.attr("ry", 5)
+						.style("fill", function(d) {return d})
+						
+					svg.selectAll(".text")
+						.data([0, .001*maxRefugees, .005*maxRefugees, .01*maxRefugees, .02*maxRefugees, .05*maxRefugees, .1*maxRefugees, .2*maxRefugees, .3*maxRefugees, .5*maxRefugees, maxRefugees])
+						.enter()
+						.append("text")
+						.attr("class", "axisText")
+						.attr("x", function(d, i) {
+							return 500+(bWidth+bSpace)*i+bWidth/2;
+						})
+						.attr("y", 650+bHeight/2)
+						.attr("width", bWidth)
+						.attr("text-anchor", "middle")
+						.attr("dominant-baseline", "central")
+						.attr("fill", "white")
+						.text(function(d){ return Math.round(d)})
+						
 					svg.selectAll("path")
 					.data(jsonCountries.features.filter(d => d.properties.name !== "Antarctica"))
 					.enter().append("path")
@@ -257,7 +308,10 @@
 						.attr("y", 345)
 						.attr('text-anchor', 'middle')
 						.text(function(state) {return originSet.size + " Countries (Outlined in Black)"})
-						.style("fill", "black");							
+						.style("fill", "black");
+						
+						svg.selectAll("text").filter(".defaultTooltipText").remove();
+
 					})
 					.on("mouseout", function(d) {
 						d3.select(this)
@@ -269,9 +323,29 @@
 						})
 						originCountryPaths.style("stroke", "white");
 						svg.selectAll("text").filter(".tooltip").remove();
+						tooltipText();
 					})
 				});
 			});
+		}
+		function tooltipText() {
+		svg.append("text")
+			.attr("class", "defaultTooltipText")
+			.attr("x", 1700)
+			.attr("y", 300)
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central")
+			.attr("fill", "white")
+			.text("Hover over a country to see")	
+			
+		svg.append("text")
+			.attr("class", "defaultTooltipText")
+			.attr("x", 1700)
+			.attr("y", 315)
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central")
+			.attr("fill", "white")
+			.text("more detailed information")	
 		}
         </script>
     </body>
